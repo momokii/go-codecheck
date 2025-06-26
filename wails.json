@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "go-codecheck-desktop",
+  "outputfilename": "go-codecheck-desktop",
+  "frontend:install": "npm install --force",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Kelana Chandra Helyandika",
+    "email": "kelanachandra7@gmail.com"
+  }
+}
