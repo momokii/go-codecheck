@@ -1,6 +1,6 @@
 <script>
   import { sidebarOpen, activeMenu } from '../../stores';
-  import logoImage from '../assets/images/logo-universal.png'
+  import logoImage from '../../assets/images/logo-universal.png'
 
   function setActiveMenu(menu) {
     $activeMenu = menu;
