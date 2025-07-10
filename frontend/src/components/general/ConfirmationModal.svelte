@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center" style="z-index: 2000;">
   <div class="bg-base-100 p-8 rounded-lg shadow-xl text-center max-w-lg">
     <h3 class="text-xl text-black font-bold mb-2">{TitleConfirmationModal}</h3>
     <p class="mb-6 text-black">{MessageConfirmationModal}</p>

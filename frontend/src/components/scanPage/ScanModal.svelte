@@ -6,59 +6,109 @@
     InitAndPrepareFolderScanSemgrep,
     RunSemgrepScan,
     GetSemgrepReportData,
-    // CopyExternalProjectToScanDir,
-    CheckIfFolderOrFIleExists
+    GetRepoDatas,
+    CreateNewScan
   } from '../../../wailsjs/go/main/App';
   
   const dispatch = createEventDispatcher();
   
-  let projectPath = '';
+  let searchTerm = '';
+  let selectedRepository = null;
+  let repositories = [];
+  let showDropdown = false;
   let scanError = null;
   let scanStage = ''; // idle, preparing, scanning, processing
-  let isValidPath = false;
+  let searchTimeout = null;
   
-  async function validatePath() {
-    if (!projectPath) {
-      isValidPath = false;
+  // Search for repositories as user types
+  async function searchRepositories() {
+    if (!searchTerm.trim()) {
+      repositories = [];
+      showDropdown = false;
       return;
     }
     
     try {
-      isValidPath = await CheckIfFolderOrFIleExists(projectPath);
+      const userId = 1; // Default user ID
+      const response = await GetRepoDatas(userId, 1, 5, searchTerm, false);
+      repositories = Array.isArray(response.data) ? response.data : [];
+      // Show dropdown if we have results OR if we searched but found nothing
+      showDropdown = true;
     } catch (error) {
-      isValidPath = false;
+      repositories = [];
+      showDropdown = true; // Show dropdown to display error state
     }
   }
   
+  // Handle search input with debouncing
+  function handleSearchInput() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchRepositories();
+    }, 300);
+  }
+  
+  // Select a repository from the dropdown
+  function selectRepository(repo) {
+    selectedRepository = repo;
+    searchTerm = repo.name;
+    repositories = [];
+    showDropdown = false;
+  }
+  
+  // Clear selection
+  function clearSelection() {
+    selectedRepository = null;
+    searchTerm = '';
+    repositories = [];
+    showDropdown = false;
+  }
+  
   async function startScan() {
-    if (!projectPath) {
-      scanError = "Please enter a project directory path to scan";
+    if (!selectedRepository) {
+      scanError = "Please select a repository to scan";
       return;
     }
+    
+    const projectPath = selectedRepository.path;
     
     try {
       // Set scanning state
       $isScanning = true;
       scanError = null;
       
-      // Stage 1: Copy external project to scan directory
+      // Stage 1: Prepare folder for scanning
       scanStage = 'preparing';
-      
-      // Stage 2: Prepare folder for scanning
       await InitAndPrepareFolderScanSemgrep(projectPath);
       
-      // Stage 3: Run the scan
+      // Stage 2: Run the scan
+      // Stage 2: Run the scan
       scanStage = 'scanning';
-      const scanResult = await RunSemgrepScan();
+      await RunSemgrepScan();
       
-      // Stage 4: Process results
+      // Stage 3: Process results
       scanStage = 'processing';
       const reportData = await GetSemgrepReportData();
       
-      // Add scan to history
+      // Prepare scan data for database
+      const scanData = {
+        user_id: 1, // Default user ID
+        repository_id: selectedRepository.id,
+        repo_name: selectedRepository.name,
+        repo_path: projectPath,
+        vulnerabilities: reportData.results?.length || 0,
+        scan_time: new Date().toISOString(),
+        result: JSON.stringify(reportData), // Store the full report as JSON
+        status: 'completed'
+      };
+
+      // Save scan to database
+      await CreateNewScan(1, scanData); // userId first, then scan data
+
+      // Add scan to local history (for immediate UI update)
       const newScan = {
-        id: $scanHistory.length + 1,
-        name: projectPath.split('/').pop().split('\\').pop(), // Extract folder name
+        id: Date.now(), // Temporary ID for local state
+        name: selectedRepository.name,
         path: projectPath,
         date: new Date().toISOString(),
         status: 'completed',
@@ -72,19 +122,18 @@
       $isScanning = false;
       dispatch('close');
 
-      // Dispatch success event with details and this information for show the information modal
+      // Dispatch success event with details
       dispatch('scanComplete', {
         success: true,
         title: "Scan Success",
         message: `Scan of ${newScan.name} completed successfully. ${newScan.vulnerabilities} vulnerabilities found.`
       });
       
-      
     } catch (error) {
       scanError = error.message || "Failed to complete scan";
       $isScanning = false;
 
-      // Dispatch error event, same for information modal if scan failed
+      // Dispatch error event
       dispatch('scanComplete', {
         success: false,
         title: "Scan Failed",
@@ -100,7 +149,16 @@
     }
     dispatch('close');
   }
+  
+  // Close dropdown when clicking outside
+  function handleClickOutside(event) {
+    if (!event.target.closest('.relative')) {
+      showDropdown = false;
+    }
+  }
 </script>
+
+<svelte:window on:click={handleClickOutside} />
 
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-base-100 rounded-lg shadow-xl w-full max-w-lg">    <!-- Modal Header -->
@@ -135,31 +193,96 @@
             {/if}
           </p>
         </div>      {:else}
-        <!-- Project Path Input -->
-        <div class="form-control w-full">          <label for="project-path" class="label">
-            <span class="label-text font-medium text-primary-focus">Enter project directory path to scan</span>
+        <!-- Repository Search -->
+        <div class="form-control w-full">
+          <label for="repository-search" class="label">
+            <span class="label-text font-medium text-primary-focus">Search and Select Repository</span>
           </label>
-          <div class="flex space-x-2">            <input 
-              id="project-path"
+          
+          <!-- Search Input -->
+          <div class="relative">
+            <input 
+              id="repository-search"
               type="text" 
-              class="input input-bordered flex-1 text-base-content font-medium" 
-              placeholder="Enter absolute path to project directory" 
-              bind:value={projectPath}
-              on:input={validatePath}
-              class:input-error={projectPath && !isValidPath}
-              class:input-success={projectPath && isValidPath} />
+              class="input input-bordered w-full text-base-content font-medium" 
+              placeholder="Type repository name to search..." 
+              bind:value={searchTerm}
+              on:input={handleSearchInput}
+              on:focus={() => searchTerm && searchRepositories()}
+              class:input-success={selectedRepository} />
+            
+            <!-- Clear button -->
+            {#if searchTerm}
+              <button 
+                type="button"
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-ghost btn-sm btn-circle"
+                on:click={clearSelection}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            {/if}
+            
+            <!-- Search Results Dropdown -->
+            {#if showDropdown}
+              <div class="absolute top-full left-0 right-0 z-10 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {#if repositories.length > 0}
+                  {#each repositories as repo}
+                    <button
+                      type="button"
+                      class="w-full text-left px-4 py-3 hover:bg-base-200 border-b border-base-300 last:border-b-0 focus:bg-base-200 focus:outline-none"
+                      on:click={() => selectRepository(repo)}
+                    >
+                      <div class="font-medium text-base-content">{repo.name}</div>
+                      <div class="text-sm text-base-content/70 truncate text-primary">{repo.description}</div>
+                      <div class="text-xs text-base-content/50 font-mono mt-1 truncate text-primary">{repo.path}</div>
+                    </button>
+                  {/each}
+                {:else}
+                  <!-- No results found state -->
+                  <div class="px-4 py-6 text-center text-base-content/60">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p class="font-medium">No matching repositories found</p>
+                    <p class="text-sm text-base-content/50 mt-1">Try a different search term</p>
+                  </div>
+                {/if}
+              </div>
+            {/if}
           </div>
+          
           <div class="label">
-            <span class="label-text-alt font-medium text-neutral text-bold">Enter the full path to your project directory (e.g., C:\Projects\my-app)</span>
+            <span class="label-text-alt font-medium text-neutral">Type to search for repositories in your database</span>
           </div>
-          <div class="mt-2 p-3 bg-base-200 rounded-lg shadow-sm">
-            <p class="mb-2 font-large text-bold text-black ">The code from the specified directory will be:</p>
-            <ol class="list-decimal pl-5 text-base-content">
-              <li class="mb-1">Copied to a temporary location for scanning</li>
-              <li class="mb-1">Analyzed for security vulnerabilities</li>
-              <li class="mb-1">Results will be displayed in the application</li>            </ol>
-            <p class="mt-2 text-warning font-medium">Note: Your original files will not be modified</p>
+        </div>
+        
+        <!-- Selected Repository Display -->
+        {#if selectedRepository}
+          <div class="mt-4">
+            <label class="label" for="selected-repo-path">
+              <span class="label-text font-medium text-primary-focus">Selected Repository Path</span>
+            </label>
+            <textarea 
+              id="selected-repo-path"
+              class="textarea textarea-bordered w-full font-mono text-sm text-black"
+              rows="2"
+              readonly
+              value={selectedRepository.path}
+            ></textarea>
           </div>
+        {/if}
+        
+        <!-- Information Box -->
+        <div class="mt-4 p-3 bg-base-200 rounded-lg shadow-sm">
+          <p class="mb-2 font-large text-bold text-black">The selected repository will be:</p>
+          <ol class="list-decimal pl-5 text-base-content">
+            <li class="mb-1">Copied to a temporary location for scanning</li>
+            <li class="mb-1">Analyzed for security vulnerabilities</li>
+            <li class="mb-1">Results will be displayed in the application</li>
+          </ol>
+          <p class="mt-2 text-warning font-medium">Note: Your original files will not be modified</p>
         </div>
       {/if}
     </div>
@@ -167,7 +290,7 @@
     <!-- Modal Footer -->
     <div class="flex items-center justify-end p-4 border-t border-gray-200 gap-2">
       <button 
-        class="btn btn-outline"
+        class="btn btn-outline btn-error"
         on:click={cancelScan}
         disabled={$isScanning && scanStage !== 'scanning'}>
         {$isScanning ? 'Cancel' : 'Close'}
@@ -177,7 +300,7 @@
         <button 
           class="btn btn-primary" 
           on:click={startScan}
-          disabled={!projectPath || !isValidPath}>
+          disabled={!selectedRepository}>
           Start Scan
         </button>
       {/if}

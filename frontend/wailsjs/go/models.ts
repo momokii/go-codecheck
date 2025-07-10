@@ -19,6 +19,226 @@ export namespace docker {
 
 }
 
+export namespace main {
+	
+	export class RepoDataPaginationFE {
+	    data: models.Repository[];
+	    total: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new RepoDataPaginationFE(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data = this.convertValues(source["data"], models.Repository);
+	        this.total = source["total"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ScanDataPaginationFE {
+	    data: models.ScanFull[];
+	    total: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScanDataPaginationFE(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data = this.convertValues(source["data"], models.ScanFull);
+	        this.total = source["total"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
+export namespace models {
+	
+	export class Repository {
+	    id: number;
+	    user_id: number;
+	    name: string;
+	    description: string;
+	    path: string;
+	    create_at: string;
+	    update_at: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Repository(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.user_id = source["user_id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.path = source["path"];
+	        this.create_at = source["create_at"];
+	        this.update_at = source["update_at"];
+	    }
+	}
+	export class RepositoryCreate {
+	    user_id: number;
+	    name: string;
+	    description: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RepositoryCreate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.user_id = source["user_id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.path = source["path"];
+	    }
+	}
+	export class RepositoryUpdate {
+	    id: number;
+	    user_id: number;
+	    name: string;
+	    description: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RepositoryUpdate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.user_id = source["user_id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.path = source["path"];
+	    }
+	}
+	export class Scan {
+	    id: number;
+	    repository_id: number;
+	    scan_time: string;
+	    result: string;
+	    vulnerabilities: number;
+	    status: string;
+	    created_at: string;
+	    updated_at: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Scan(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.repository_id = source["repository_id"];
+	        this.scan_time = source["scan_time"];
+	        this.result = source["result"];
+	        this.vulnerabilities = source["vulnerabilities"];
+	        this.status = source["status"];
+	        this.created_at = source["created_at"];
+	        this.updated_at = source["updated_at"];
+	    }
+	}
+	export class ScanCreate {
+	    repository_id: number;
+	    user_id: number;
+	    scan_time: string;
+	    result: string;
+	    vulnerabilities: number;
+	    status: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScanCreate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.repository_id = source["repository_id"];
+	        this.user_id = source["user_id"];
+	        this.scan_time = source["scan_time"];
+	        this.result = source["result"];
+	        this.vulnerabilities = source["vulnerabilities"];
+	        this.status = source["status"];
+	    }
+	}
+	export class ScanFull {
+	    scan: Scan;
+	    repository_name: string;
+	    repository_path: string;
+	    repository_description: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScanFull(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.scan = this.convertValues(source["scan"], Scan);
+	        this.repository_name = source["repository_name"];
+	        this.repository_path = source["repository_path"];
+	        this.repository_description = source["repository_description"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace parser {
 	
 	export class PerFileTime {

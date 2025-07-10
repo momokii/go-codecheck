@@ -2,6 +2,7 @@
   import Sidebar from './components/general/Sidebar.svelte';
   import ScanView from './views/ScanView.svelte';
   import HistoryView from './views/HistoryView.svelte';
+  import RepositoryView from './views/RepositoryView.svelte';
   
   import { activeMenu, sidebarOpen } from './stores';
   
@@ -25,6 +26,8 @@
       <ScanView />
     {:else if $activeMenu === 'history'}
       <HistoryView />
+    {:else if $activeMenu === 'repository'}
+      <RepositoryView />
     {/if}
   </div>
 </main>

@@ -30,12 +30,12 @@ function createPersistentStore(key, initialValue) {
 export const sidebarOpen = writable(true);
 
 // Current active menu
-export const activeMenu = writable('scan'); // 'scan' or 'history'
+export const activeMenu = writable('scan'); // 'scan', 'history', or 'repository'                 
 
 // Scanning state
 export const isScanning = writable(false);
 
 // History of scans - persisted to localStorage
-export const scanHistory = createPersistentStore('scanHistory', []);
-// export const scanHistory = writable([])
+// export const scanHistory = createPersistentStore('scanHistory', []);
+export const scanHistory = writable([])
 

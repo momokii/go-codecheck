@@ -28,6 +28,21 @@ func ParseSemgrepReport(filePath string) (*SemgrepReport, error) {
 	return &report, nil
 }
 
+func ParseResultSemgrepFromDatabase(jsonString string) (*SemgrepReport, error) {
+	// Parse the JSON string directly into our struct
+	var report SemgrepReport
+	if jsonString == "" {
+		return nil, fmt.Errorf("empty JSON string provided")
+	}
+
+	err := json.Unmarshal([]byte(jsonString), &report)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse Semgrep report: %w", err)
+	}
+
+	return &report, nil
+}
+
 // GetVulnerabilities returns a filtered list of security vulnerabilities from the report
 func (report *SemgrepReport) GetVulnerabilities() []SemgrepResult {
 	// Only include results that have severity of WARNING or ERROR

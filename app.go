@@ -5,7 +5,12 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/momokii/go-codecheck/backend/core/databases"
 	"github.com/momokii/go-codecheck/backend/core/docker"
+	"github.com/momokii/go-codecheck/backend/core/handlers"
+	"github.com/momokii/go-codecheck/backend/core/models"
+	repository "github.com/momokii/go-codecheck/backend/core/repository/repo"
+	"github.com/momokii/go-codecheck/backend/core/repository/scan"
 	"github.com/momokii/go-codecheck/backend/core/semgrep"
 	"github.com/momokii/go-codecheck/backend/pkg/parser"
 	"github.com/momokii/go-codecheck/backend/pkg/utils"
@@ -13,23 +18,39 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	scanHandler handlers.ScanHandler
+	repoHandler handlers.RepoHandler
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+
+	// init db
+	if err := databases.InitDatabaseSQLite(); err != nil {
+		panic(fmt.Sprintf("Database initialization failed: %v", err))
+	}
+
+	db, err := databases.NewSQLiteDatabases(databases.DATABASE_SQLITE_PATH)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to database: %v", err))
+	}
+
+	// init repo
+	repoRepo := repository.NewRepository()
+	scanRepo := scan.NewScanRepository()
+
+	//  init app with handler
+	return &App{
+		scanHandler: *handlers.NewScanHandler(db.GetDB(), scanRepo, repoRepo),
+		repoHandler: *handlers.NewRepoHandler(db.GetDB(), repoRepo),
+	}
 }
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-}
-
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
 func (a *App) CheckIfFolderOrFIleExists(path string) (bool, error) {
@@ -71,7 +92,77 @@ func (a *App) RunSemgrepScan() (*semgrep.ScanResult, error) {
 
 func (a *App) GetSemgrepReportData() (*parser.SemgrepReport, error) {
 
-	path := filepath.Join(semgrep.REPORTS_FOLDER_PATH, semgrep.REPORTS_FILE_NAME)
+	path := filepath.Join(semgrep.REPORTS_FOLDER_PATH, utils.REPORTS_FILE_NAME)
 
 	return parser.ParseSemgrepReport(path)
+}
+
+// ! ============================  FUNCTION FROM HANDLERS
+
+// ? =========== REPO
+type RepoDataPaginationFE struct {
+	Data  []models.Repository `json:"data"`
+	Total int                 `json:"total"`
+}
+
+func (a *App) GetRepoDatas(userId, page, perPage int, search string, desc_sort bool) (RepoDataPaginationFE, error) {
+
+	datas, total, err := a.repoHandler.GetReposData(userId, page, perPage, search, desc_sort)
+
+	data := RepoDataPaginationFE{
+		Data:  datas,
+		Total: total,
+	}
+
+	return data, err
+}
+
+func (a *App) GetRepoById(userId, repoId int) (models.Repository, error) {
+	return a.repoHandler.GetOneRepoById(userId, repoId)
+}
+
+func (a *App) CreateNewRepo(newRepoData models.RepositoryCreate) error {
+	return a.repoHandler.CreateNewRepo(&newRepoData)
+}
+
+func (a *App) UpdateRepo(repoId int, updateData models.RepositoryUpdate) error {
+	return a.repoHandler.UpdateRepo(&updateData)
+}
+
+func (a *App) DeleteRepo(repoId, userId int) error {
+	return a.repoHandler.DeleteRepo(repoId, userId)
+}
+
+// ? =========== SCAN
+type ScanDataPaginationFE struct {
+	Data  []models.ScanFull `json:"data"`
+	Total int               `json:"total"`
+}
+
+func (a *App) GetScanDatas(repoId, page, perPage int, search string, desc_sort bool) (ScanDataPaginationFE, error) {
+	datas, total, err := a.scanHandler.GetScansData(repoId, page, perPage, search, desc_sort)
+
+	data := ScanDataPaginationFE{
+		Data:  datas,
+		Total: total,
+	}
+
+	return data, err
+}
+
+// test ini komentar
+func (a *App) GetScanById(repoId, scanId int) (models.ScanFull, error) {
+	return a.scanHandler.GetScanById(repoId, scanId)
+}
+
+func (a *App) CreateNewScan(repoId int, newScanData models.ScanCreate) error {
+	return a.scanHandler.CreateNewScan(&newScanData)
+}
+
+func (a *App) DeleteScan(repoId, scanId int) error {
+	return a.scanHandler.DeleteScan(repoId, scanId)
+}
+
+func (a *App) GetScanDetail(jsonString string) (*parser.SemgrepReport, error) {
+	return parser.ParseResultSemgrepFromDatabase(jsonString)
 }

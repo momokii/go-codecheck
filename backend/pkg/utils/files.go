@@ -7,6 +7,14 @@ import (
 	"path/filepath"
 )
 
+const (
+	PROJECT_SCAN_DIR_NAME = "project-to-scan"
+	REPORTS_DIR_NAME      = "reports"
+	REPORTS_FILE_NAME     = "semgrep-report.json"
+
+	APP_DATA_DIR_NAME = "GoCodeCheckDesktop"
+)
+
 func CheckIfFolderOrFileExists(path string) (bool, error) {
 	if _, err := os.Stat(path); err != nil {
 
@@ -122,4 +130,55 @@ func CopyFile(src, dst string) error {
 	}
 
 	return nil
+}
+
+// getAbsolutePath converts a relative path to an absolute path
+func GetAbsolutePath(path string) (string, error) {
+	// If path is already absolute, return it
+	if filepath.IsAbs(path) {
+		return path, nil
+	}
+
+	// Get the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	// Join with the current directory to make it absolute
+	absPath := filepath.Join(cwd, path)
+	return absPath, nil
+}
+
+// getBaseDir returns the appropriate base directory for storing application data
+// In development, it uses a local directory; in production, it uses a user-specific directory
+func GetBaseDir() string {
+	// Try to use a directory in user's home for production
+	userConfigDir, err := os.UserConfigDir()
+
+	if err == nil {
+		// Use a directory in the user's config folder (e.g., AppData on Windows)
+		appDataDir := filepath.Join(userConfigDir, APP_DATA_DIR_NAME)
+
+		// Check/create the directory
+		if err := os.MkdirAll(appDataDir, 0755); err == nil {
+			return appDataDir
+		}
+	}
+
+	// Fallback: try to use system temp directory
+	tempBaseDir := filepath.Join(os.TempDir(), APP_DATA_DIR_NAME)
+	if err := os.MkdirAll(tempBaseDir, 0755); err == nil {
+		return tempBaseDir
+	}
+
+	// Last resort: use a local directory (for development)
+	return filepath.Join(".", "backend", "core")
+}
+
+// ensureDirectory makes sure a directory exists, creating it if necessary
+func EnsureDirectory(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_ = os.MkdirAll(path, 0755)
+	}
 }
