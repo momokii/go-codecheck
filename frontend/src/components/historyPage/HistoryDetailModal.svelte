@@ -35,9 +35,41 @@
         return 'badge-ghost';
     }
   }
+  
+  // Safely render code snippets by escaping HTML and ensuring proper string format
+  function sanitizeCodeSnippet(code) {
+    if (!code) return '';
+    
+    // Convert to string if it's not already
+    let codeStr = typeof code === 'string' ? code : String(code);
+    
+    // Remove any null bytes or invalid characters that could cause parsing issues
+    codeStr = codeStr.replace(/\0/g, '').trim();
+    
+    // Ensure we have valid content
+    if (!codeStr) return 'No code content available';
+    
+    return codeStr;
+  }
+  
+  // Safely render text data by ensuring proper string format
+  function sanitizeText(text) {
+    if (!text) return '';
+    
+    // Convert to string if it's not already
+    let textStr = typeof text === 'string' ? text : String(text);
+    
+    // Remove any null bytes or invalid characters that could cause parsing issues
+    textStr = textStr.replace(/\0/g, '').trim();
+    
+    // Ensure we have valid content
+    if (!textStr) return 'No content available';
+    
+    return textStr;
+  }
 </script>
 
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 overflow-y-auto">
   <div class="bg-base-100 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">    <!-- Modal Header -->
     <div class="p-4 border-b border-gray-200 flex justify-between items-center">
       <h3 class="text-xl font-bold text-primary">
@@ -108,7 +140,7 @@
               <div class="card-body p-4">
                 <div class="flex justify-between items-start flex-wrap gap-2">
                   <h5 class="card-title text-base text-primary-focus">
-                    {issue.check_id || 'Unknown Issue'}
+                    {sanitizeText(issue.check_id || 'Unknown Issue')}
                   </h5>
                   <span class="badge {getSeverityClass(issue.extra?.severity || 'medium')} text-white font-medium">
                     {issue.extra?.severity || 'medium'}
@@ -117,13 +149,13 @@
                 
                 <!-- Issue message -->
                 <div class="my-2 text-base-content font-medium text-justify">
-                  {issue.extra?.message || 'No description available'}
+                  {sanitizeText(issue.extra?.message || 'No description available')}
                 </div>
                 
                 <!-- Code snippet -->
                 {#if issue.extra?.lines}
                   <div class="bg-neutral text-neutral-content p-3 rounded overflow-x-auto mb-2 text-left">
-                    <pre class="text-xs"><code>{issue.extra.lines}</code></pre>
+                    <pre class="text-xs whitespace-pre-wrap"><code>{sanitizeCodeSnippet(issue.extra.lines)}</code></pre>
                   </div>
                 {/if}
                 
@@ -132,7 +164,7 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <span class="text-xs font-bold text-primary-focus">File:</span>
-                      <span class="text-xs text-base-content font-medium ml-1">{issue.path}</span>
+                      <span class="text-xs text-base-content font-medium ml-1">{sanitizeText(issue.path)}</span>
                     </div>
                     <div>
                       <span class="text-xs font-bold text-primary-focus">Location:</span>
