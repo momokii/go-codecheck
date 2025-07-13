@@ -21,6 +21,7 @@ type App struct {
 	ctx         context.Context
 	scanHandler handlers.ScanHandler
 	repoHandler handlers.RepoHandler
+	userHandler handlers.UserHandler
 }
 
 // NewApp creates a new App application struct
@@ -150,7 +151,6 @@ func (a *App) GetScanDatas(repoId, page, perPage int, search string, desc_sort b
 	return data, err
 }
 
-// test ini komentar
 func (a *App) GetScanById(repoId, scanId int) (models.ScanFull, error) {
 	return a.scanHandler.GetScanById(repoId, scanId)
 }
@@ -165,4 +165,25 @@ func (a *App) DeleteScan(repoId, scanId int) error {
 
 func (a *App) GetScanDetail(jsonString string) (*parser.SemgrepReport, error) {
 	return parser.ParseResultSemgrepFromDatabase(jsonString)
+}
+
+// ? =========== USER
+func (a *App) GetAndValidateUserByToken(token string) (models.User, error) {
+	return a.userHandler.GetAndValidateUserDataByToken(token)
+}
+
+func (a *App) Login(userLogin models.UserLogin) (token string, err error) {
+	return a.userHandler.UserLogin(userLogin)
+}
+
+func (a *App) UpdateUserPassword(userUpdate models.UserUpdate, isCompletedSetup bool) error {
+	return a.userHandler.UserUpdatePassword(userUpdate, isCompletedSetup)
+}
+
+func (a *App) UpdateUserUsername(userUpdate models.UserUpdate) error {
+	return a.userHandler.UserUpdateUsername(userUpdate)
+}
+
+func (a *App) Logout(userId int) error {
+	return a.userHandler.UserDeleteSession(userId)
 }

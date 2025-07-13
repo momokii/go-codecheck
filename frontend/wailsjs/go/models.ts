@@ -236,6 +236,68 @@ export namespace models {
 		    return a;
 		}
 	}
+	export class User {
+	    id: number;
+	    username: string;
+	    password: string;
+	    is_completed_setup: boolean;
+	    session_token: string;
+	    session_expired: string;
+	    created_at: string;
+	    updated_at: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new User(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.username = source["username"];
+	        this.password = source["password"];
+	        this.is_completed_setup = source["is_completed_setup"];
+	        this.session_token = source["session_token"];
+	        this.session_expired = source["session_expired"];
+	        this.created_at = source["created_at"];
+	        this.updated_at = source["updated_at"];
+	    }
+	}
+	export class UserLogin {
+	    username: string;
+	    password: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UserLogin(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.username = source["username"];
+	        this.password = source["password"];
+	    }
+	}
+	export class UserUpdate {
+	    id: number;
+	    username?: string;
+	    password?: string;
+	    is_completed_setup?: boolean;
+	    session_token?: string;
+	    session_expired?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UserUpdate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.username = source["username"];
+	        this.password = source["password"];
+	        this.is_completed_setup = source["is_completed_setup"];
+	        this.session_token = source["session_token"];
+	        this.session_expired = source["session_expired"];
+	    }
+	}
 
 }
 

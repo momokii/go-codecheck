@@ -30,6 +30,10 @@ export function DeleteScan(arg1, arg2) {
   return window['go']['main']['App']['DeleteScan'](arg1, arg2);
 }
 
+export function GetAndValidateUserByToken(arg1) {
+  return window['go']['main']['App']['GetAndValidateUserByToken'](arg1);
+}
+
 export function GetRepoById(arg1, arg2) {
   return window['go']['main']['App']['GetRepoById'](arg1, arg2);
 }
@@ -58,10 +62,26 @@ export function InitAndPrepareFolderScanSemgrep(arg1) {
   return window['go']['main']['App']['InitAndPrepareFolderScanSemgrep'](arg1);
 }
 
+export function Login(arg1) {
+  return window['go']['main']['App']['Login'](arg1);
+}
+
+export function Logout(arg1) {
+  return window['go']['main']['App']['Logout'](arg1);
+}
+
 export function RunSemgrepScan() {
   return window['go']['main']['App']['RunSemgrepScan']();
 }
 
 export function UpdateRepo(arg1, arg2) {
   return window['go']['main']['App']['UpdateRepo'](arg1, arg2);
+}
+
+export function UpdateUserPassword(arg1, arg2) {
+  return window['go']['main']['App']['UpdateUserPassword'](arg1, arg2);
+}
+
+export function UpdateUserUsername(arg1) {
+  return window['go']['main']['App']['UpdateUserUsername'](arg1);
 }

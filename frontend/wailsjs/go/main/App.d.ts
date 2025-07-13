@@ -20,6 +20,8 @@ export function DeleteRepo(arg1:number,arg2:number):Promise<void>;
 
 export function DeleteScan(arg1:number,arg2:number):Promise<void>;
 
+export function GetAndValidateUserByToken(arg1:string):Promise<models.User>;
+
 export function GetRepoById(arg1:number,arg2:number):Promise<models.Repository>;
 
 export function GetRepoDatas(arg1:number,arg2:number,arg3:number,arg4:string,arg5:boolean):Promise<main.RepoDataPaginationFE>;
@@ -34,6 +36,14 @@ export function GetSemgrepReportData():Promise<parser.SemgrepReport>;
 
 export function InitAndPrepareFolderScanSemgrep(arg1:string):Promise<void>;
 
+export function Login(arg1:models.UserLogin):Promise<string>;
+
+export function Logout(arg1:number):Promise<void>;
+
 export function RunSemgrepScan():Promise<semgrep.ScanResult>;
 
 export function UpdateRepo(arg1:number,arg2:models.RepositoryUpdate):Promise<void>;
+
+export function UpdateUserPassword(arg1:models.UserUpdate,arg2:boolean):Promise<void>;
+
+export function UpdateUserUsername(arg1:models.UserUpdate):Promise<void>;
