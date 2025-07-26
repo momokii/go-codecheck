@@ -280,6 +280,7 @@ export namespace models {
 	    id: number;
 	    username?: string;
 	    password?: string;
+	    previous_password?: string;
 	    is_completed_setup?: boolean;
 	    session_token?: string;
 	    session_expired?: string;
@@ -293,6 +294,7 @@ export namespace models {
 	        this.id = source["id"];
 	        this.username = source["username"];
 	        this.password = source["password"];
+	        this.previous_password = source["previous_password"];
 	        this.is_completed_setup = source["is_completed_setup"];
 	        this.session_token = source["session_token"];
 	        this.session_expired = source["session_expired"];

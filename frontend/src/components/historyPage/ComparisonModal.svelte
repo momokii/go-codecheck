@@ -43,10 +43,10 @@
     switch(severity.toLowerCase()) {
       case 'critical':
         return 'badge-error text-white';
-      case 'high':
+      case 'error':
+        return 'badge-error text-white';
+      case 'warning':
         return 'badge-warning text-white';
-      case 'medium':
-        return 'badge-info text-white';
       case 'low':
         return 'badge-success text-white';
       default:
@@ -103,14 +103,14 @@
   <div class="modal modal-open" style="z-index: 40;" on:click|self={close}>
     <div class="modal-box w-11/12 max-w-7xl max-h-screen overflow-hidden" role="dialog" aria-labelledby="modal-title">
       <!-- Modal Header -->
-      <div class="flex justify-between items-center mb-6 border-b pb-4">
+      <div class="flex justify-center items-center mb-6 border-b pb-4 text-center">
         <div>
           <h3 id="modal-title" class="font-bold text-2xl text-primary">Scan Results Comparison</h3>
           <p class="text-sm text-gray-600 mt-1">
             Comparing vulnerabilities between two scan results
           </p>
         </div>
-        <button class="btn btn-sm btn-circle btn-ghost" on:click={close}>✕</button>
+        <button class="btn btn-sm btn-circle btn-ghost absolute top-4 right-4" on:click={close}>✕</button>
       </div>
 
       <!-- Scan Information Cards -->
@@ -119,7 +119,7 @@
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-4">
             <h4 class="card-title text-lg text-primary">📊 Baseline Scan</h4>
-            <div class="space-y-2 text-sm">
+            <div class="space-y-2 text-sm text-black">
               <div><strong>Repository:</strong> {comparisonData?.metadata?.olderScan?.name || 'Unknown'}</div>
               <div><strong>Date:</strong> {formatDate(comparisonData?.metadata?.olderScan?.date)}</div>
               <div><strong>Total Vulnerabilities:</strong> 
@@ -135,7 +135,7 @@
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-4">
             <h4 class="card-title text-lg text-primary">🔍 Latest Scan</h4>
-            <div class="space-y-2 text-sm">
+            <div class="space-y-2 text-sm text-black">
               <div><strong>Repository:</strong> {comparisonData?.metadata?.newerScan?.name || 'Unknown'}</div>
               <div><strong>Date:</strong> {formatDate(comparisonData?.metadata?.newerScan?.date)}</div>
               <div><strong>Total Vulnerabilities:</strong>
@@ -236,23 +236,26 @@
                     </svg>
                     <span><strong>{comparisonData?.summary?.new || 0}</strong> new vulnerabilities detected - immediate review recommended</span>
                   </div>
-                {/if}
-                
-                {#if (comparisonData?.summary?.fixed || 0) > 0}
+                {:else if (comparisonData?.summary?.fixed || 0) > 0}
                   <div class="alert alert-success">
                     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span><strong>{comparisonData?.summary?.fixed || 0}</strong> vulnerabilities have been successfully resolved</span>
                   </div>
-                {/if}
-                
-                {#if (comparisonData?.summary?.unresolved || 0) > 0}
+                {:else if (comparisonData?.summary?.unresolved || 0) > 0}
                   <div class="alert alert-warning">
                     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.74 0L3.073 19c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
                     <span><strong>{comparisonData?.summary?.unresolved || 0}</strong> vulnerabilities remain unresolved since the baseline</span>
+                  </div>
+                {:else}
+                  <div class="alert alert-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>🛡️ <strong>Repository is secure</strong> - No vulnerabilities detected in both scans</span>
                   </div>
                 {/if}
               </div>

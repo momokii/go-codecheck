@@ -1,11 +1,14 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { UpdateRepo, CheckIfFolderOrFIleExists } from '../../../wailsjs/go/main/App';
+  import { authStore } from '../../stores';
   
   const dispatch = createEventDispatcher();
   
   export let isOpen = false;
   export let repository = null;
+  
+  $: user = $authStore.user;
   
   let formData = {
     id: 0,
@@ -33,7 +36,7 @@
       if (repo && repo['id']) {
         formData = {
           id: repo['id'] || 0,
-          user_id: repo['user_id'] || 1,
+          user_id: repo['user_id'] || user?.id || 1,
           name: repo['name'] || '',
           description: repo['description'] || '',
           path: repo['path'] || ''
@@ -58,7 +61,7 @@
   function resetForm() {
     formData = {
       id: 0,
-      user_id: 1,
+      user_id: user?.id || 1,
       name: '',
       description: '',
       path: ''

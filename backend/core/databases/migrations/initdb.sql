@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS repositories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    -- FOREIGN KEY (user_id) REFERENCES users(id), -- will implement later
     name TEXT NOT NULL,
     description TEXT,
     path TEXT NOT NULL,

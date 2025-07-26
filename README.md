@@ -1,121 +1,277 @@
-# Go-CodeCheck Desktop
+# Go CodeCheck Desktop
 
 <p align="center">
-  <img src="./frontend/src/assets/images/logo-universal.png" alt="Go-CodeCheck Desktop Logo" width="175" style="border-radius: 15px;">
+  <img src="./frontend/src/assets/images/logo-universal.png" alt="Go CodeCheck Desktop Logo" width="175" style="border-radius: 15px;">
 </p>
 
-## Overview
+A comprehensive desktop application for automated security vulnerability scanning and code analysis, built with the Wails framework. This tool provides an intuitive interface for managing code repositories, performing security scans using Semgrep, and analyzing vulnerability trends over time.
 
-Go-CodeCheck Desktop is a cross-platform application that performs security scanning on code repositories using Semgrep. Built with Go and Svelte, it provides an intuitive interface for running security scans on local code directories and reviewing the scan results.
+## 🚀 Key Features
 
-## Features
+### 🔐 Authentication & User Management
+- **Secure Session-Based Authentication**: Login with username/password credentials
+- **First-Time Setup Flow**: Mandatory password change for new users ensures security
+- **User Profile Management**: Update username and password through intuitive modals
+- **Professional Error Handling**: Enhanced UX with informative modal feedback and loading states
 
-- **Local Code Scanning**: Scan any local directory for security vulnerabilities
-- **Semgrep Integration**: Powered by Semgrep's powerful static analysis engine
-- **Docker-based Execution**: No need to install Semgrep locally
-- **Detailed Reports**: View comprehensive vulnerability reports with severity ratings, CWE references, and more
-- **Scan History**: Keep track of previous scans and their results
-- **Cross-Platform**: Works on Windows, macOS, and Linux
+### 📁 Repository Management
+- **CRUD Operations**: Complete repository lifecycle management (Create, Read, Update, Delete)
+- **Path Validation**: Real-time verification of repository paths before saving
+- **Search & Filter**: Advanced filtering and pagination for large repository collections
+- **Repository Details**: Store and manage repository metadata including name, description, and path
 
-## Prerequisites
+### 🔍 Security Scanning
+- **Semgrep Integration**: Powered by industry-standard Semgrep security analysis engine
+- **Docker-Based Execution**: Containerized scanning ensures consistency and isolation
+- **Automated Dependency Management**: Automatic Docker image pulling and environment setup
+- **Real-Time Scan Progress**: Live updates with scanning stages (preparing, scanning, processing)
+- **Comprehensive Vulnerability Detection**: Identifies security issues, code quality problems, and potential vulnerabilities
 
-- [Docker](https://www.docker.com/get-started) installed and running
-- The [Semgrep Docker image](https://hub.docker.com/r/semgrep/semgrep) (`docker pull semgrep/semgrep:latest`)
+### 📊 Scan History & Analysis
+- **Complete Scan History**: Persistent storage of all scan results with detailed metadata
+- **Advanced Filtering**: Filter scans by repository, date range, status, and search terms
+- **Detailed Vulnerability Reports**: In-depth analysis of each vulnerability with:
+  - Severity levels and impact assessment
+  - File locations and line numbers
+  - Code snippets and context
+  - Semgrep rule information and recommendations
+- **Scan Comparison Engine**: Side-by-side comparison of two scans from the same repository showing:
+  - **New Vulnerabilities**: Issues introduced since the baseline scan
+  - **Fixed Issues**: Vulnerabilities resolved between scans
+  - **Persistent Problems**: Unresolved issues requiring attention
+  - **Statistical Analysis**: Trend analysis and security posture improvements
 
-## Installation
+### 💾 Data Management
+- **SQLite Database**: Embedded database for local data persistence
+- **Automated Migrations**: Database schema versioning and automatic updates
+- **Relational Data Model**: Properly normalized schema with foreign key relationships
+- **Data Integrity**: Transactional operations ensure data consistency
+
+### 🎨 Modern User Interface
+- **Svelte Frontend**: Reactive, component-based UI architecture
+- **DaisyUI Design System**: Professional, accessible design components
+- **TailwindCSS Styling**: Utility-first CSS framework for consistent design
+- **Responsive Layout**: Optimized for various screen sizes and resolutions
+- **Loading States**: Professional loading overlays and progress indicators
+- **Modal System**: Contextual dialogs for user interactions and confirmations
+
+## 🛠 Technical Stack
+
+### Backend
+- **Go**: High-performance backend with robust error handling
+- **Wails Framework**: Go-based desktop application framework
+- **SQLite**: Embedded database for local data storage
+- **Docker Integration**: Containerized security scanning with Semgrep
+- **Repository Pattern**: Clean architecture with separated concerns
+
+### Frontend
+- **Svelte**: Reactive JavaScript framework
+- **Vite**: Fast build tool and development server
+- **DaisyUI**: Semantic component library
+
+### Infrastructure
+- **Docker**: Container runtime for Semgrep execution
+- **Semgrep**: Open-source static analysis security scanner
+- **Cross-Platform**: Windows, macOS, and Linux support
+
+## 📋 Prerequisites
+
+Before installing Go CodeCheck Desktop, ensure you have:
+
+- **Go 1.19+**: Backend runtime and build tools
+- **Node.js 16+**: Frontend development and build process
+- **Docker Desktop**: Required for security scanning functionality
+- **Wails CLI**: Desktop application framework
+  ```bash
+  go install github.com/wailsapp/wails/v2/cmd/wails@latest
+  ```
+
+## 🚀 Installation & Setup
 
 ### From Releases
 
 1. Download the latest release for your platform from the [Releases](https://github.com/your-username/go-codecheck-desktop/releases) page
 2. Extract the archive (if applicable)
 3. Run the application executable
+4. Complete the initial setup and authentication flow
 
 ### Building from Source
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/your-username/go-codecheck-desktop.git
-   cd go-codecheck-desktop
-   ```
-
-2. Install [Wails](https://wails.io/):
-   ```
-   go install github.com/wailsapp/wails/cmd/wails@latest
-   ```
-
-3. Install frontend dependencies:
-   ```
-   cd frontend
-   npm install
-   cd ..
-   ```
-
-4. Build the application:
-   ```
-   wails build
-   ```
-
-   The built application will be in the `build/bin` directory.
-
-## Development
-
-### Live Development
-
-To run in live development mode:
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/go-codecheck-desktop.git
+cd go-codecheck-desktop
 ```
+
+#### 2. Install Dependencies
+```bash
+# Install Go dependencies
+go mod tidy
+
+# Install Node.js dependencies
+cd frontend
+npm install
+cd ..
+```
+
+#### 3. Database Setup
+The application automatically initializes the SQLite database on first run with the required schema including:
+- Users table for authentication
+- Repositories table for project management
+- Scans table for vulnerability tracking
+
+#### 4. Docker Configuration
+Ensure Docker Desktop is running. The application will automatically:
+- Check Docker availability
+- Pull the Semgrep Docker image when needed
+- Manage containerized scanning processes
+
+#### 5. Build the Application
+```bash
+# Development build
+wails dev
+
+# Production build
+wails build
+```
+
+The built application will be in the `build/bin/` directory.
+
+## 🎯 Usage Guide
+
+### Initial Setup
+1. **Launch the Application**: Run the built executable or development server
+2. **First-Time Login**: Use default credentials or create your initial user account
+3. **Password Setup**: Complete the mandatory password change for security
+4. **Environment Check**: Verify Docker and Semgrep availability from the Scan page
+
+### Repository Management
+1. **Navigate to Repositories**: Access the repository management interface
+2. **Add Repository**: Click "Add Repository" and provide:
+   - Repository name and description
+   - Full path to the code directory
+   - Path validation confirms directory existence
+3. **Manage Repositories**: Edit, update, or remove repositories as needed
+
+### Security Scanning
+1. **Access Scan Interface**: Navigate to the scanning page
+2. **Select Repository**: Choose from your registered repositories
+3. **Initiate Scan**: Click "Scan Now" to begin the security analysis
+4. **Monitor Progress**: Track real-time scanning progress through multiple stages
+5. **Review Results**: Analyze detailed vulnerability reports upon completion
+
+### History & Analysis
+1. **View Scan History**: Access comprehensive scan records with filtering options
+2. **Detailed Reports**: Click on any scan to view in-depth vulnerability analysis
+3. **Compare Scans**: Select two scans from the same repository to:
+   - Identify new security issues
+   - Track resolved vulnerabilities
+   - Monitor security posture trends
+   - Generate comparison reports
+
+### User Management
+Access user settings to:
+- Update login credentials
+- Modify user profile information
+- Change passwords with validation
+
+## 📁 Project Structure
+
+```
+go-codecheck-desktop/
+├── backend/
+│   ├── core/
+│   │   ├── databases/          # SQLite setup and migrations
+│   │   ├── docker/            # Docker integration
+│   │   ├── handlers/          # API request handlers
+│   │   ├── models/            # Data models and structures
+│   │   ├── repository/        # Data access layer
+│   │   └── semgrep/           # Semgrep integration
+│   └── pkg/
+│       ├── parser/            # Report parsing utilities
+│       └── utils/             # Helper functions
+├── frontend/
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   ├── stores/            # State management
+│   │   └── views/             # Main application pages
+│   └── wailsjs/               # Generated Wails bindings
+├── build/                     # Build artifacts and resources
+└── design/                    # Application design assets
+```
+
+## 🔧 Development
+
+### Live Development Mode
+```bash
 wails dev
 ```
+This starts the application with hot-reload capabilities for both frontend and backend changes. The application is also accessible in your browser at http://localhost:34115 for debugging with devtools.
 
-This will run a Vite development server that provides hot reload for frontend changes. You can also access the application in your browser at http://localhost:34115, which gives you access to Go methods from the browser's devtools.
+### Building for Production
+```bash
+wails build
+```
+Creates optimized binaries for your platform in the `build/bin/` directory.
 
-### Project Structure
+### Database Migrations
+The application automatically handles database migrations. To add new migrations:
+1. Create SQL files in `backend/core/databases/migrations/`
+2. Update the migration logic in the database initialization code
 
-- `/app.go`: Main application entry point
-- `/backend/`: Go backend code
-  - `/core/`: Core functionality
-    - `/docker/`: Docker integration
-    - `/semgrep/`: Semgrep scanning implementation
-    - `/reports/`: Report storage
-  - `/pkg/`: Utility packages
-    - `/parser/`: Report parsing utilities
-    - `/utils/`: General utilities
-- `/frontend/`: Svelte frontend code
-  - `/src/`: Source code
-    - `/components/`: Svelte components
-    - `/views/`: Page views
-    - `/stores/`: Svelte stores
-    - `/assets/`: Static assets
+### How It Works
+1. **Repository Registration**: Users register code repositories with metadata
+2. **Docker Integration**: Application manages Semgrep container execution
+3. **Temporary Workspace**: Target directories are copied to temporary locations for scanning
+4. **Security Analysis**: Semgrep performs comprehensive static analysis
+5. **Report Processing**: JSON reports are parsed and stored in the database
+6. **Comparative Analysis**: Historical data enables trend analysis and comparison
 
-## Usage
+### Adding New Features
+1. **Backend Changes**: Modify Go code in the `backend/` directory
+2. **Frontend Changes**: Update Svelte components in `frontend/src/`
+3. **API Integration**: Update Wails bindings and handlers as needed
+4. **Database Schema**: Add migrations for data model changes
 
-1. Launch the application
-2. Ensure Docker is running (the app will check this for you)
-3. Navigate to the Scan tab
-4. Enter the absolute path to the directory you want to scan
-5. Click "Start Scan" and wait for the scan to complete
-6. Review the scan results in the History tab
-7. Click "Details" to view comprehensive information about each scan
+## 🤝 Contributing
 
-## How It Works
+We welcome contributions to Go CodeCheck Desktop! Please follow these guidelines:
 
-1. The application copies the target directory to a temporary location
-2. It runs Semgrep via Docker in this temporary location
-3. Semgrep generates a JSON report with scan results
-4. The application parses and displays these results in a user-friendly format
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
+### Getting Started
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes with appropriate tests
+4. Commit your changes: `git commit -m 'Add amazing feature'`
+5. Push to the branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request
 
-## Acknowledgments
+### Code Standards
+- Follow Go best practices and formatting (`gofmt`)
+- Use meaningful commit messages
+- Include documentation for new features
+- Ensure all tests pass before submitting
+- Maintain consistent code style with existing codebase
 
-- [Semgrep](https://semgrep.dev/) for the powerful code scanning engine
-- [Wails](https://wails.io/) for the Go/Svelte desktop application framework
-- [Svelte](https://svelte.dev/) for the reactive UI framework
-- [Tailwind CSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/) for styling
+### Bug Reports
+When reporting bugs, please include:
+- Operating system and version
+- Go and Node.js versions
+- Steps to reproduce the issue
+- Expected vs. actual behavior
+- Relevant logs or error messages
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **[Semgrep](https://semgrep.dev/)**: For providing the excellent static analysis security scanner
+- **[Wails Team](https://wails.io/)**: For creating an outstanding Go-based desktop application framework
+- **[Svelte](https://svelte.dev/)**: For the reactive frontend framework
+- **[DaisyUI](https://daisyui.com/)**: For the beautiful and accessible UI components
+- **[TailwindCSS](https://tailwindcss.com/)**: For the utility-first CSS framework
+
+---
+
+**Go CodeCheck Desktop** - Making code security analysis accessible, comprehensive, and actionable. 🛡️

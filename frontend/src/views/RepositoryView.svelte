@@ -6,6 +6,7 @@
   import EditRepositoryModal from '../components/repositoryPage/EditRepositoryModal.svelte';
   
   import { GetRepoDatas, DeleteRepo } from '../../wailsjs/go/main/App';
+  import { authStore } from '../stores/index.js';
   
   // State variables
   let repositories = [];
@@ -42,7 +43,11 @@
   async function loadRepositories() {
     isLoading = true;
     try {
-      const userId = 1; // You might want to get this from a store
+      const userId = $authStore.user?.id;
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
       const response = await GetRepoDatas(userId, currentPage, perPage, searchTerm, sortDesc);
       
       // Handle different possible response formats
@@ -164,7 +169,12 @@
     if (!selectedRepository) return;
     
     try {
-      await DeleteRepo(selectedRepository.id, 1); // userId = 1
+      const userId = $authStore.user?.id;
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
+      await DeleteRepo(selectedRepository.id, userId);
       showInfo('Success', 'Repository deleted successfully!');
       loadRepositories();
     } catch (error) {

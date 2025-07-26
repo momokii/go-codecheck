@@ -1,13 +1,16 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { CreateNewRepo, CheckIfFolderOrFIleExists } from '../../../wailsjs/go/main/App';
+  import { authStore } from '../../stores';
   
   const dispatch = createEventDispatcher();
   
   export let isOpen = false;
   
+  $: user = $authStore.user;
+  
   let formData = {
-    user_id: 1, // Default user ID, you might want to get this from a store
+    user_id: 1, // Will be updated with actual user ID
     name: '',
     description: '',
     path: ''
@@ -16,6 +19,11 @@
   let errors = {};
   let isLoading = false;
   let isValidPath = false;
+  
+  // Update user_id when user changes
+  $: if (user?.id) {
+    formData.user_id = user.id;
+  }
   
   // Reactive statement to validate path when it changes
   $: validatePath(formData.path);
@@ -28,7 +36,7 @@
   
   function resetForm() {
     formData = {
-      user_id: 1,
+      user_id: user?.id,
       name: '',
       description: '',
       path: ''

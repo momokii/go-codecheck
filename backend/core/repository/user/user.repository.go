@@ -18,7 +18,7 @@ func NewUserRepository() *UserRepository {
 func (r *UserRepository) FindByToken(tx *sql.Tx, token string) (*models.User, error) {
 	var user models.User
 
-	query := "SELECT id, username, password, is_completed_setup, session_token, session_expired, created_at, updated_at FROM users WHERE session_token = ?"
+	query := "SELECT id, username, password, is_setup_completed, COALESCE(session_token, '') as session_token, COALESCE(session_expired, '') as session_expired, created_at, updated_at FROM users WHERE session_token = ?"
 
 	if err := tx.QueryRow(query, token).Scan(
 		&user.Id,
@@ -42,7 +42,7 @@ func (r *UserRepository) FindByToken(tx *sql.Tx, token string) (*models.User, er
 func (r *UserRepository) FindById(tx *sql.Tx, id int) (*models.User, error) {
 	var user models.User
 
-	query := "SELECT id, username, password, is_completed_setup, session_token, session_expired, created_at, updated_at FROM users WHERE id = ?"
+	query := "SELECT id, username, password, is_setup_completed, COALESCE(session_token, '') as session_token, COALESCE(session_expired, '') as session_expired, created_at, updated_at FROM users WHERE id = ?"
 
 	if err := tx.QueryRow(query, id).Scan(
 		&user.Id,
@@ -67,7 +67,7 @@ func (r *UserRepository) FindByUsername(tx *sql.Tx, username string) (*models.Us
 
 	var user models.User
 
-	query := "SELECT id, username, password, is_completed_setup, session_token, session_expired, created_at, updated_at FROM users WHERE username = ?"
+	query := "SELECT id, username, password, is_setup_completed, COALESCE(session_token, '') as session_token, COALESCE(session_expired, '') as session_expired, created_at, updated_at FROM users WHERE username = ?"
 
 	if err := tx.QueryRow(query, username).Scan(
 		&user.Id,
@@ -104,7 +104,7 @@ func (r *UserRepository) Update(tx *sql.Tx, userUpdate *models.UserUpdate) error
 	}
 
 	if userUpdate.IsCompletedSetup != nil {
-		setParts = append(setParts, "is_completed_setup = ?")
+		setParts = append(setParts, "is_setup_completed = ?")
 		args = append(args, *userUpdate.IsCompletedSetup)
 	}
 

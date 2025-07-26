@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { isScanning, scanHistory } from '../../stores';
+  import { isScanning, scanHistory, authStore } from '../../stores';
   
   import { 
     InitAndPrepareFolderScanSemgrep,
@@ -11,6 +11,8 @@
   } from '../../../wailsjs/go/main/App';
   
   const dispatch = createEventDispatcher();
+  
+  $: user = $authStore.user;
   
   let searchTerm = '';
   let selectedRepository = null;
@@ -28,9 +30,14 @@
       return;
     }
     
+    if (!user?.id) {
+      repositories = [];
+      showDropdown = true;
+      return;
+    }
+    
     try {
-      const userId = 1; // Default user ID
-      const response = await GetRepoDatas(userId, 1, 5, searchTerm, false);
+      const response = await GetRepoDatas(user.id, 1, 5, searchTerm, false);
       repositories = Array.isArray(response.data) ? response.data : [];
       // Show dropdown if we have results OR if we searched but found nothing
       showDropdown = true;
@@ -92,7 +99,7 @@
       
       // Prepare scan data for database
       const scanData = {
-        user_id: 1, // Default user ID
+        user_id: user?.id,
         repository_id: selectedRepository.id,
         repo_name: selectedRepository.name,
         repo_path: projectPath,

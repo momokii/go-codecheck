@@ -11,6 +11,7 @@ import (
 	"github.com/momokii/go-codecheck/backend/core/models"
 	repository "github.com/momokii/go-codecheck/backend/core/repository/repo"
 	"github.com/momokii/go-codecheck/backend/core/repository/scan"
+	"github.com/momokii/go-codecheck/backend/core/repository/user"
 	"github.com/momokii/go-codecheck/backend/core/semgrep"
 	"github.com/momokii/go-codecheck/backend/pkg/parser"
 	"github.com/momokii/go-codecheck/backend/pkg/utils"
@@ -40,11 +41,13 @@ func NewApp() *App {
 	// init repo
 	repoRepo := repository.NewRepository()
 	scanRepo := scan.NewScanRepository()
+	userRepo := user.NewUserRepository()
 
 	//  init app with handler
 	return &App{
 		scanHandler: *handlers.NewScanHandler(db.GetDB(), scanRepo, repoRepo),
 		repoHandler: *handlers.NewRepoHandler(db.GetDB(), repoRepo),
+		userHandler: *handlers.NewUserHandler(db.GetDB(), userRepo),
 	}
 }
 
@@ -182,6 +185,10 @@ func (a *App) UpdateUserPassword(userUpdate models.UserUpdate, isCompletedSetup 
 
 func (a *App) UpdateUserUsername(userUpdate models.UserUpdate) error {
 	return a.userHandler.UserUpdateUsername(userUpdate)
+}
+
+func (a *App) CompleteFirstSetup(userId int) error {
+	return a.userHandler.UserCompleteFirstSetup(userId)
 }
 
 func (a *App) Logout(userId int) error {

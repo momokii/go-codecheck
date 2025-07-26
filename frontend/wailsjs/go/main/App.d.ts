@@ -12,6 +12,8 @@ export function CheckDockerIsAvailable():Promise<string>;
 
 export function CheckIfFolderOrFIleExists(arg1:string):Promise<boolean>;
 
+export function CompleteFirstSetup(arg1:number):Promise<void>;
+
 export function CreateNewRepo(arg1:models.RepositoryCreate):Promise<void>;
 
 export function CreateNewScan(arg1:number,arg2:models.ScanCreate):Promise<void>;

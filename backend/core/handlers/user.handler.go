@@ -82,10 +82,11 @@ func (h *UserHandler) GetAndValidateUserDataByToken(token string) (models.User, 
 
 		// if not expired, so give the user information for basic data
 		user = models.User{
-			Id:        userCheck.Id,
-			Username:  userCheck.Username,
-			CreatedAt: userCheck.CreatedAt,
-			UpdatedAt: userCheck.UpdatedAt,
+			Id:               userCheck.Id,
+			Username:         userCheck.Username,
+			IsCompletedSetup: userCheck.IsCompletedSetup,
+			CreatedAt:        userCheck.CreatedAt,
+			UpdatedAt:        userCheck.UpdatedAt,
 		}
 
 		return nil, http.StatusOK
@@ -171,9 +172,13 @@ func (h *UserHandler) UserUpdatePassword(userUpdate models.UserUpdate, isComplet
 		for _, err := range err.(validator.ValidationErrors) {
 			switch err.Field() {
 			case "Password":
-				return fmt.Errorf("Error: %s", err)
+				return fmt.Errorf("Make sure your password is at least 6 characters long and max 64 characters, contains numbers and uppercase letters")
 			}
 		}
+	}
+
+	if userUpdate.PreviousPassword == "" {
+		return fmt.Errorf("Previous password is required for password update")
 	}
 
 	if err, _ := h.sqliteDB.Transaction(context.Background(), func(tx *sql.Tx) (err error, statusCode int) {
@@ -186,6 +191,11 @@ func (h *UserHandler) UserUpdatePassword(userUpdate models.UserUpdate, isComplet
 
 		if userCheck.Id == 0 {
 			return fmt.Errorf("User with ID %d not found", userUpdate.Id), http.StatusNotFound
+		}
+
+		// check previous password is correct
+		if err := bcrypt.CompareHashAndPassword([]byte(userCheck.Password), []byte(userUpdate.PreviousPassword)); err != nil {
+			return fmt.Errorf("Previous password is incorrect"), http.StatusBadRequest
 		}
 
 		// hash new pass
@@ -214,13 +224,54 @@ func (h *UserHandler) UserUpdatePassword(userUpdate models.UserUpdate, isComplet
 	return nil
 }
 
+func (h *UserHandler) UserCompleteFirstSetup(userId int) error {
+
+	if userId == 0 {
+		return fmt.Errorf("Invalid user ID")
+	}
+
+	if err, _ := h.sqliteDB.Transaction(context.Background(), func(tx *sql.Tx) (err error, statusCode int) {
+
+		// just in case if needed in future improvement
+		// checkk user username
+		userCheck, err := h.UserRepo.FindById(tx, userId)
+		if err != nil {
+			return fmt.Errorf("Error checking user: %w", err), http.StatusInternalServerError
+		}
+
+		if userCheck.Id == 0 {
+			return fmt.Errorf("User with ID %d not found", userId), http.StatusNotFound
+		}
+
+		// change change setup status completed
+		statusCompleted := true
+		if err := h.UserRepo.Update(
+			tx,
+			&models.UserUpdate{
+				Id:               userCheck.Id,
+				IsCompletedSetup: &statusCompleted,
+			},
+		); err != nil {
+
+			return fmt.Errorf("Error updating username: %w", err), http.StatusInternalServerError
+		}
+
+		return nil, http.StatusOK
+
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *UserHandler) UserUpdateUsername(userUpdate models.UserUpdate) error {
 
 	if err := utils.ValidateStruct(userUpdate); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			switch err.Field() {
 			case "Username":
-				return fmt.Errorf("Error: %s", err)
+				return fmt.Errorf("Make sure to new username minimal 5 characters and max 32 characters, alphanumeric only")
 			}
 		}
 	}

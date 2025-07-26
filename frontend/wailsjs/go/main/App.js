@@ -14,6 +14,10 @@ export function CheckIfFolderOrFIleExists(arg1) {
   return window['go']['main']['App']['CheckIfFolderOrFIleExists'](arg1);
 }
 
+export function CompleteFirstSetup(arg1) {
+  return window['go']['main']['App']['CompleteFirstSetup'](arg1);
+}
+
 export function CreateNewRepo(arg1) {
   return window['go']['main']['App']['CreateNewRepo'](arg1);
 }

@@ -37,5 +37,48 @@ export const isScanning = writable(false);
 
 // History of scans - persisted to localStorage
 // export const scanHistory = createPersistentStore('scanHistory', []);
-export const scanHistory = writable([])
+export const scanHistory = writable([]);
+
+// Authentication state - persisted to localStorage
+export const authStore = createPersistentStore('auth', {
+  isAuthenticated: false,
+  user: null,
+  token: null,
+  needsPasswordChange: false
+});
+
+// Auth helper functions
+export const authActions = {
+  login: (user, token, needsPasswordChange = false) => {
+    authStore.set({
+      isAuthenticated: true,
+      user,
+      token,
+      needsPasswordChange
+    });
+  },
+  
+  logout: () => {
+    authStore.set({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      needsPasswordChange: false
+    });
+  },
+  
+  updateUser: (updatedUser) => {
+    authStore.update(state => ({
+      ...state,
+      user: { ...state.user, ...updatedUser }
+    }));
+  },
+  
+  clearPasswordChangeFlag: () => {
+    authStore.update(state => ({
+      ...state,
+      needsPasswordChange: false
+    }));
+  }
+};
 

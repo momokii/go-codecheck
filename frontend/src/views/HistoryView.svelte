@@ -1,12 +1,14 @@
 <script>
   import { onMount } from 'svelte';
-  import { scanHistory } from '../stores';
+  import { scanHistory, authStore } from '../stores';
   import HistoryDetailModal from '../components/historyPage/HistoryDetailModal.svelte';
   import ComparisonModal from '../components/historyPage/ComparisonModal.svelte';
   import ConfirmationModal from '../components/general/ConfirmationModal.svelte';
   import InformationModal from '../components/general/InformationModal.svelte';
   
   import { GetScanDatas, DeleteScan, GetRepoDatas, GetScanDetail } from '../../wailsjs/go/main/App';
+  
+  $: user = $authStore.user;
   
   // State variables
   let scans = [];
@@ -94,7 +96,12 @@
   
   async function loadRepositoriesForFilter() {
     try {
-      const userId = 1;
+      const userId = $authStore.user?.id;
+      if (!userId) {
+        repositories = [];
+        return;
+      }
+      
       const response = await GetRepoDatas(userId, 1, 10, '', false);
       repositories = Array.isArray(response) ? response : (response?.data || []);
     } catch (error) {
@@ -111,7 +118,13 @@
     }
     
     try {
-      const userId = 1;
+      const userId = $authStore.user?.id;
+      if (!userId) {
+        repositories = [];
+        showRepositoryDropdown = true;
+        return;
+      }
+      
       const response = await GetRepoDatas(userId, 1, 10, repositoryFilter, false);
       repositories = Array.isArray(response) ? response : (response?.data || []);
       showRepositoryDropdown = true;
@@ -418,8 +431,8 @@
   function viewDeleteConfirmationScanData(scan) {
     showConfirmModal = true;
     selectedScan = scan;
-    titleConfirmModal = `Delete Scan "${scan.repo_name || scan.name}"`;
-    confirmMessage = `Are you sure you want to delete the scan of "${scan.repo_name || scan.name}"? This action cannot be undone.`;
+    titleConfirmModal = `Delete Scan from repo "${scan.repository_name}"`;
+    confirmMessage = `Are you sure you want to delete the scan of "${scan.repository_name}" that scan at "${scan.scan.scan_time}"? This action cannot be undone.`;
   }
 
   async function deleteScanData() {
@@ -427,8 +440,9 @@
     
     try {
       // Use the correct scan ID structure based on the data format
-      const scanId = selectedScan.scan?.id || selectedScan.id;
-      await DeleteScan(scanId, 1); // scanId first, then userId
+      const scanId = selectedScan.scan?.id
+      const repositoryId = selectedScan.scan?.repository_id
+      await DeleteScan(repositoryId, scanId); // scanId first, then userId
       showInfo('Success', 'Scan deleted successfully!');
       loadScans();
     } catch (error) {
