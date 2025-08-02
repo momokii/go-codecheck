@@ -56,10 +56,11 @@ func (report *SemgrepReport) GetVulnerabilities() []SemgrepResult {
 	return vulnerabilities
 }
 
+// ! basically just for the ERROR for the scan rules not the code result scan error. So just ignore this for now
 // GetErrorCount returns the total number of errors in the report
-func (report *SemgrepReport) GetErrorCount() int {
-	return len(report.Errors)
-}
+// func (report *SemgrepReport) GetErrorCount() int {
+// 	return len(report.Errors)
+// }
 
 // GetResultsSummary returns a summary of findings by severity
 func (report *SemgrepReport) GetResultsSummary() map[string]int {

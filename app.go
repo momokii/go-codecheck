@@ -90,8 +90,17 @@ func (a *App) InitAndPrepareFolderScanSemgrep(targetPath string) error {
 	return semgrep.InitializeAndPrepareFolderScanSemgrep(targetPath)
 }
 
-func (a *App) RunSemgrepScan() (*semgrep.ScanResult, error) {
-	return semgrep.RunSemgrepScan()
+func (a *App) RunSemgrepScan(usingAllRules bool) (*semgrep.ScanResult, error) {
+	return semgrep.RunSemgrepScan(usingAllRules)
+}
+
+func (a *App) CancelSemgrepScan() error {
+	return semgrep.CancelCurrentScan()
+}
+
+// Add method to check scan status
+func (a *App) IsSemgrepScanRunning() bool {
+	return semgrep.IsScanRunning()
 }
 
 func (a *App) GetSemgrepReportData() (*parser.SemgrepReport, error) {

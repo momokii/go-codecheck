@@ -1,9 +1,27 @@
 <script>
   import { isScanning } from '../../stores';
-  
-  // Function to cancel scanning (would call an API if available)
-  function cancelScan() {
-    $isScanning = false;
+    import { 
+    CancelSemgrepScan,
+    IsSemgrepScanRunning
+  } from '../../../wailsjs/go/main/App';
+
+
+  // Function to cancel scanning
+  async function cancelScan() {
+    
+    if ($isScanning) {
+      try {
+        // Call cancel immediately - don't wait in a loop
+        await CancelSemgrepScan();
+        
+        // Set scanning to false immediately
+        $isScanning = false;
+        
+      } catch (error) {
+        // Even if there's an error, stop the scanning state
+        $isScanning = false;
+      }
+    }
   }
 </script>
 

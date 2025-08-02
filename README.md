@@ -141,8 +141,8 @@ The built application will be in the `build/bin/` directory.
 
 ### Initial Setup
 1. **Launch the Application**: Run the built executable or development server
-2. **First-Time Login**: Use default credentials or create your initial user account
-3. **Password Setup**: Complete the mandatory password change for security
+2. **First-Time Login**: Use the default credentials `admin/admin` (username: admin, password: admin) for initial access
+3. **Password Setup**: Complete the mandatory password change for security - you will be automatically prompted to change the default password
 4. **Environment Check**: Verify Docker and Semgrep availability from the Scan page
 
 ### Repository Management

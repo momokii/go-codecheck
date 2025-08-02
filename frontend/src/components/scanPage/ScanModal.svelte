@@ -21,6 +21,7 @@
   let scanError = null;
   let scanStage = ''; // idle, preparing, scanning, processing
   let searchTimeout = null;
+  let using_all_rules = true
   
   // Search for repositories as user types
   async function searchRepositories() {
@@ -91,7 +92,7 @@
       // Stage 2: Run the scan
       // Stage 2: Run the scan
       scanStage = 'scanning';
-      await RunSemgrepScan();
+      await RunSemgrepScan(using_all_rules);
       
       // Stage 3: Process results
       scanStage = 'processing';
@@ -137,19 +138,19 @@
       });
       
     } catch (error) {
-      scanError = error.message || "Failed to complete scan";
+      scanError = error || "Failed to complete scan 2";
       $isScanning = false;
 
       // Dispatch error event
       dispatch('scanComplete', {
         success: false,
         title: "Scan Failed",
-        message: error.message || "Failed to complete scan"
+        message: error || "Failed to complete scan 5"
       });
     }
   }
   
-  function cancelScan() {
+  async function cancelScan() {
     if ($isScanning) {
       // We would call a cancel API here if available
       $isScanning = false;
@@ -280,7 +281,18 @@
             ></textarea>
           </div>
         {/if}
-        
+
+        <!-- CHOOSE USING ALL RULES SEMGREP OR DEFAULT SETUP -->
+        <div class="mt-4">
+          <label class="label" for="scan-setup-select">
+            <span class="label-text font-medium text-primary-focus">Choose Scan Setup</span>
+          </label>
+          <select id="scan-setup-select" class="select select-bordered w-full text-black" bind:value={using_all_rules}>
+            <option value={true}>Use All Rules (Recommended)</option>
+            <option value={false}>Use Default Setup (Less Than All Rules)</option>
+          </select>
+        </div>
+
         <!-- Information Box -->
         <div class="mt-4 p-3 bg-base-200 rounded-lg shadow-sm">
           <p class="mb-2 font-large text-bold text-black">The selected repository will be:</p>

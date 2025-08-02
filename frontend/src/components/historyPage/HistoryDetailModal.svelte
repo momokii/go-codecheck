@@ -5,6 +5,22 @@
 
   const dispatch = createEventDispatcher();
   
+  // State for severity filter
+  let selectedSeverity = 'ALL';
+  
+  // Reactive variable for filtered vulnerabilities
+  $: filteredVulnerabilities = (() => {
+    if (!scan.report?.results) return [];
+    
+    if (selectedSeverity === 'ALL') {
+      return scan.report.results;
+    } else {
+      return scan.report.results.filter(
+        result => result.extra?.severity?.toUpperCase() === selectedSeverity
+      );
+    }
+  })();
+  
   function closeModal() {
     dispatch('close');
   }
@@ -29,12 +45,31 @@
         return 'badge-error text-black';
       case 'warning':
         return 'badge-warning';
-      case 'low':
+      case 'info':
         return 'badge-info';
       default:
         return 'badge-ghost';
     }
   }
+
+  function getTotalVulnerabilities(scan) {
+    if (!scan || !scan.report) return 0
+    
+    let vulnerabilities = 0
+
+    const total_result = scan.report.results ? scan.report.results.length : 0
+
+    if (total_result > 0 ) {
+      for (const issue of scan.report.results) {
+        if (issue.extra && issue.extra.severity && issue.extra.severity.toLowerCase() !== 'info') {
+          vulnerabilities += 1
+        }
+      }
+    }
+    
+    return vulnerabilities
+  }
+
   
   // Safely render code snippets by escaping HTML and ensuring proper string format
   function sanitizeCodeSnippet(code) {
@@ -105,20 +140,20 @@
               </p>
             </div>            <div>
               <p class="text-sm font-semibold text-primary-focus">Total Issues</p>
-              <p class="font-bold text-lg {(scan.vulnerabilities + (scan.report?.errors?.length || 0)) > 0 ? 'text-error' : 'text-success'}">
-                {scan.vulnerabilities + (scan.report?.errors?.length || 0)}
+              <p class="font-bold text-lg {scan.vulnerabilities  > 0 ? 'text-error' : 'text-success'}">
+                {scan.vulnerabilities }
               </p>
             </div>
             <div>
               <p class="text-sm font-semibold text-primary-focus">Vulnerabilities</p>
-              <p class="font-bold text-lg {scan.vulnerabilities > 0 ? 'text-error' : 'text-success'}">
-                {scan.vulnerabilities}
+              <p class="font-bold text-lg {getTotalVulnerabilities(scan) > 0 ? 'text-error' : 'text-success'}">
+                {getTotalVulnerabilities(scan) }
               </p>
             </div>
             <div>
-              <p class="text-sm font-semibold text-primary-focus">Parse Errors</p>
-              <p class="font-bold text-lg {scan.report?.errors?.length > 0 ? 'text-warning' : 'text-success'}">
-                {scan.report?.errors?.length || 0}
+              <p class="text-sm font-semibold text-primary-focus">Informational Data</p>
+              <p class="font-bold text-lg { getTotalVulnerabilities(scan) !== scan.vulnerabilities ? 'text-info' : 'text-success'}">
+                {scan.vulnerabilities - getTotalVulnerabilities(scan) || 0}
               </p>
             </div>
             {#if scan.report && scan.report.version}
@@ -130,12 +165,36 @@
           </div>
         </div>
       </div>
+      
+      <!-- Severity Filter Dropdown -->
+      {#if scan.report && scan.report.results && scan.report.results.length > 0}
+        <div class="mb-6">
+          <div class="flex items-center gap-3">
+            <label for="severity-filter" class="text-sm font-semibold text-primary-focus">Filter by Severity:</label>
+            <select 
+              id="severity-filter"
+              bind:value={selectedSeverity}
+              class="select select-bordered select-sm w-auto min-w-[150px] bg-base-100 text-black"
+            >
+              <option value="ALL">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="ERROR">Error</option>
+              <option value="WARNING">Warning</option>
+              <option value="INFO">Info</option>
+            </select>
+            <span class="text-xs text-base-content opacity-70">
+              Showing {filteredVulnerabilities.length} of {scan.report.results.length} vulnerabilities
+            </span>
+          </div>
+        </div>
+      {/if}
+
         <!-- Vulnerabilities List -->
       {#if scan.report && scan.report.results && scan.report.results.length > 0}
-        <h4 class="text-lg font-bold mb-4 text-primary-focus">Vulnerabilities ({scan.report.results.length})</h4>
+        <h4 class="text-lg font-bold mb-4 text-primary-focus">Vulnerabilities ({filteredVulnerabilities.length})</h4>
         
         <div class="space-y-6">
-          {#each scan.report.results as issue}
+          {#each filteredVulnerabilities as issue}
             <div class="card border border-base-300 shadow-md bg-base-100">
               <div class="card-body p-4">
                 <div class="flex justify-between items-start flex-wrap gap-2">
@@ -153,11 +212,12 @@
                 </div>
                 
                 <!-- Code snippet -->
-                {#if issue.extra?.lines}
+                <!-- will not use this for now, because the code snipped required login to see it  -->
+                <!-- {#if issue.extra?.lines}
                   <div class="bg-neutral text-neutral-content p-3 rounded overflow-x-auto mb-2 text-left">
                     <pre class="text-xs whitespace-pre-wrap"><code>{sanitizeCodeSnippet(issue.extra.lines)}</code></pre>
                   </div>
-                {/if}
+                {/if} -->
                 
                 <!-- Location details -->
                 <div class="mt-2 p-3 bg-base-200 rounded-lg">
@@ -221,6 +281,17 @@
             </div>
           {/each}        
         </div>
+        
+        <!-- No results message for filtered view -->
+        {#if filteredVulnerabilities.length === 0 && selectedSeverity !== 'ALL'}
+          <div class="alert alert-info shadow-lg mt-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+              <h3 class="font-bold">No vulnerabilities found</h3>
+              <div class="text-sm">No vulnerabilities match the selected severity level: {selectedSeverity.toLowerCase()}</div>
+            </div>
+          </div>
+        {/if}
       {/if}
 
       <!-- Parse Errors List -->

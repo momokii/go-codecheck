@@ -135,7 +135,7 @@
     <!-- Footer -->
     <div class="text-center mt-8 pt-6 border-t border-gray-200">
       <p class="text-sm text-gray-500">
-        CodeCheck Desktop v1.0
+        CodeCheck Desktop v1.1.1
       </p>
     </div>
   </div>

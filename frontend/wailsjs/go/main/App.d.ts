@@ -6,6 +6,8 @@ import {main} from '../models';
 import {parser} from '../models';
 import {semgrep} from '../models';
 
+export function CancelSemgrepScan():Promise<void>;
+
 export function CheckDockerImagesIsAvailable(arg1:string,arg2:string):Promise<docker.DockerImage>;
 
 export function CheckDockerIsAvailable():Promise<string>;
@@ -38,11 +40,13 @@ export function GetSemgrepReportData():Promise<parser.SemgrepReport>;
 
 export function InitAndPrepareFolderScanSemgrep(arg1:string):Promise<void>;
 
+export function IsSemgrepScanRunning():Promise<boolean>;
+
 export function Login(arg1:models.UserLogin):Promise<string>;
 
 export function Logout(arg1:number):Promise<void>;
 
-export function RunSemgrepScan():Promise<semgrep.ScanResult>;
+export function RunSemgrepScan(arg1:boolean):Promise<semgrep.ScanResult>;
 
 export function UpdateRepo(arg1:number,arg2:models.RepositoryUpdate):Promise<void>;
 

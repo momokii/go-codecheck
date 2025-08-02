@@ -6,9 +6,9 @@ package parser
 type SemgrepReport struct {
 	Version string          `json:"version"`
 	Results []SemgrepResult `json:"results"`
-	Errors  []SemgrepError  `json:"errors"`
-	Paths   SemgrepPaths    `json:"paths"`
-	Time    SemgrepTime     `json:"time"`
+	// Errors  []SemgrepError  `json:"errors"` // ! basically just for the ERROR for the scan rules not the code result scan error. So just ignore this for now
+	Paths SemgrepPaths `json:"paths"`
+	Time  SemgrepTime  `json:"time"`
 }
 
 // SemgrepResult represents an individual finding in the report
